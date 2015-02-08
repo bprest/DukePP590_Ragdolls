@@ -11,13 +11,21 @@ SME_file = "SME\ and\ Residential\ allocations.xlsx"
 
 list_of_dfs = [pd.read_table(v, names = ['ID', 'DayTime', 'kwh'], sep = "\s") for v in paths]
 
+df = pd.concat(list_of_dfs, ignore_index = True)
+
+t_b = df.duplicated(['ID', 'DayTime'])
+b_t = df.duplicated(['ID', 'DayTime'], take_last = True)
+unique = ~(t_b | b_t)
+df_duplicates_dropped = df[unique]
+
+df_cleaned = df_duplicates_dropped.dropna()
+
 df_assign = pd.read_csv(root + SME_file, usecols = [0:5])
 
-df = pd.concat(list_of_dfs, ignore_index = True)
-df = pd.merge(df, df_assign)
+df_merge = pd.merge(df_cleaned, df_assign)
 
-df1 = df.copy()
-df.date[66949] = 67001
-df.date[66950] = 67002
-df.date[29849] = 29901
-df.date[29850] = 29902
+df1 = df_merge.copy()
+df_merge.date[66949] = 67001
+df_merge.date[66950] = 67002
+df_merge.date[29849] = 29901
+df_merge.date[29850] = 29902
