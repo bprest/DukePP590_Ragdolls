@@ -3,7 +3,6 @@ from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
 import os
-import xlrd
 
 main_dir = u'C:/Users/bcp17/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
 data_dir = main_dir+"/UnzippedData/"
@@ -13,18 +12,21 @@ assignmentfile = "SME and Residential allocations.csv"
 # Read first 10 lins of the file to determine type.
 # This reveals that it's space delimited
 N = 10
-with open(main_dir + "/" + "File1.txt") as myfile:
+with open(data_dir + "/" + "File1.txt") as myfile:
     head = [next(myfile) for x in xrange(N)]
 print head
 
 
 # Read in the data.
-pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
-list_of_dfs = [ pd.read_csv(v, names = ['panid', 'date', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+#pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
+#list_of_dfs = [ pd.read_csv(v, names = ['panid', 'date', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+#df = pd.concat(list_of_dfs, ignore_index = True)
 
-# Now clean the data
-df=pd.read_csv(data_dir+"File1.txt", names = ['panid', 'date', 'kwh'], sep = " ", header=None, na_values=['-','NA']) # temporary, for debugging code.
+#################### temporary, for debugging code.
+df=pd.read_csv(data_dir+"File1.txt", names = ['panid', 'date', 'kwh'], sep = " ", header=None, na_values=['-','NA']) 
+#################### temporary, for debugging code.
 
+### Now clean the data
 # Determine number of fully duplicated rows.
 print("Number of Fully Duplicated Rows: ") 
 print(sum(df.duplicated())) 
@@ -45,19 +47,32 @@ print(df[dupe_on_panidtime_bt | dupe_on_panidtime_tb])
 
 # drop duplicated values, taking only the last.
 df = df.drop_duplicates(['panid','date'], take_last=True)
-
+del [dupe_on_panidtime_bt, dupe_on_panidtime_tb]
 # check for NaNs. Drop full row if any column is missing.
 isnan = np.isnan(df)
 print("Number of NaNs:",sum(isnan))
 anyisnan = sum(isnan, axis = 1)>0 # True if any column is missing.
 df = df[~anyisnan] # keep only the ones where no column is missing.
+del [anyisnan, isnan]
 
-# Fix daylight savings issues:
+###### Fix daylight savings issues:
 #* Day 452 has 2 missing entries numbered 2 and 3
 #* Day 669 has 2 extra entries numbered 49 and 50
 #* Day 298 has 2 extra entries numbered 49 and 50
 # Fix these by dropping observations 4-5, and pulling 6-50 all back by 2.
+hour = mod(df.time,100)
+day = (df.time - hour)/100
+droprows = ((hour==4) | (hour==5)) & ((day==669) + (day==298)) 
+df[droprows]
+df = df[~droprows]
+replacerows = ((day==669) + (day==298)) & ((hour>=6) & (hour<=50))
+df.time[replacerows] = df.time[replacerows] - 2
 
+df[hour>50] # weird. panid 1208
+[min(df.panid[hour>50]), max(df.panid[hour>50])] # weird. panid 1208 has hour readings up to 95
+
+droprows = (df.panid==1208)
+df.drop(droprows, inplace = True)
 
 # Load in treatment assignment info.
 assignment = pd.read_csv(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
