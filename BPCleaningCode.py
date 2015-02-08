@@ -4,16 +4,16 @@ from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
 import os
+import xlrd
 
-main_dir = u'C:/Users/bcp17/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
-data_dir = main_dir+"/UnzippedData/"
-git_dir = "C:/Users/bcp17/OneDrive/Grad School/GitHub/PubPol590"
-assignmentfile = "SME and Residential allocations.csv"
+main_dir = '/Users/EZ/DUKE-MEM/Spring 2015/Big Data/Group Assignment 1/'
+data_dir = main_dir
+assignmentfile = "SME and Residential allocations.xlsx"
 
 # Read first 10 lines of the file to determine type.
 # This reveals that it's space delimited
 N = 10
-with open(data_dir + "/" + "File1.txt") as myfile:
+with open(data_dir + "File1.txt") as myfile:
     head = [next(myfile) for x in xrange(N)]
 print head
 
@@ -28,9 +28,10 @@ for i in list_of_dfs:
     i.dropna(axis = 0 , how='any')
     hour = i.time % 100
     day = (i.time - hour)/100
-    droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298)) 
-    i.drop(droprows, inplace = True)
-    replacerows = ((day==669) + (day==298)) & ((hour>=6) & (hour<=50))
+    droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298))
+    i = i[~droprows]
+    #i.drop(droprows, inplace = True)
+    replacerows = ((day==669) & (day==298)) & ((hour>=6) & (hour<=50))
     i.time[replacerows] = i.time[replacerows] - 2
     
 #df[hour>50] # weird. panid 1208
@@ -70,7 +71,7 @@ droprows = (df.panid==1208)
 df = df[~droprows]
 
 # Load in treatment assignment info.
-assignment = pd.read_csv(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
+assignment = pd.read_excel(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
 assignment = assignment[assignment.Code==1] # keep only the residential guys
 assignment = assignment[[0,2,3]] # drop "Code" now, since it's always 1.
 assignment.columns = ['panid','tariff','stimulus']
