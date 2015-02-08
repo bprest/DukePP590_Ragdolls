@@ -50,23 +50,11 @@ df = list_of_dfs[0]
 for i in range(5,0,-1):
     df = pd.concat([df, list_of_dfs[i]], ignore_index = True)
     del list_of_dfs[i]
+    
 
-###### Fix daylight savings issues:
-#* Day 452 has 2 missing entries numbered 2 and 3
-#* Day 669 has 2 extra entries numbered 49 and 50
-#* Day 298 has 2 extra entries numbered 49 and 50
-# Fix these by dropping observations 4-5, and pulling 6-50 all back by 2.
-hour = df.time % 100
-day = (df.time - hour)/100
-droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298)) 
-df[droprows]
-df.drop(droprows, inplace = True)
-replacerows = ((day==669) + (day==298)) & ((hour>=6) & (hour<=50))
-df.time[replacerows] = df.time[replacerows] - 2
-
-df[hour>50] # weird. panid 1208
-[min(df.panid[hour>50]), max(df.panid[hour>50])] # weird. panid 1208 has hour readings up to 95. Lets drop that one.
-droprows = (df.panid==1208)
+df[hour>50] # weird. panid 1208 and 5221.
+[min(df.panid[hour>50]), max(df.panid[hour>50])] # weird. panid 1208 and 5221 have hour readings up to 95. Lets drop those.
+droprows = (df.panid==1208) | (df.panid==5221)
 #df.drop(droprows, inplace = True) # this failed on me. not sure why
 df = df[~droprows]
 
