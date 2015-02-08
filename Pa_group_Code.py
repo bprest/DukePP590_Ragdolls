@@ -7,9 +7,9 @@ import os
 main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/"
 root = main_dir + "Data/Group/"
 paths = [root + "File" + str(v) + ".txt" for v in range(1,7)]
-SME_file = "SME\ and\ Residential\ allocations.xlsx"
+SME_file = "SME and Residential allocations.xlsx"
 
-list_of_dfs = [pd.read_table(v, names = ['ID', 'DayTime', 'kwh'], sep = "\s") for v in paths]
+list_of_dfs = [pd.read_table(v, names = ['ID', 'DayTime', 'kwh'], sep = "\s", ) for v in paths]
 
 df = pd.concat(list_of_dfs, ignore_index = True)
 
@@ -20,7 +20,7 @@ df_duplicates_dropped = df[unique]
 
 df_cleaned = df_duplicates_dropped.dropna()
 
-df_assign = pd.read_csv(root + SME_file, usecols = [0:5])
+df_assign = pd.read_csv(root + SME_file, usecols = range(0,5))
 
 df_merge = pd.merge(df_cleaned, df_assign)
 
