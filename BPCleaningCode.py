@@ -20,6 +20,13 @@ print head
 # Read in the data.
 pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
 list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+
+
+# Remove Duplicates from each df
+for i in list_of_dfs:
+    i = i.drop_duplicates(['panid','time'], take_last=True)
+
+# Stack dfs
 df = pd.concat(list_of_dfs, ignore_index = True)
 
 #################### temporary, for debugging code.
