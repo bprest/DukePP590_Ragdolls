@@ -24,7 +24,9 @@ list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", head
 
 # Remove Duplicates from each df
 for i in list_of_dfs:
-    i = i.drop_duplicates(['panid','time'], take_last=True)
+    i.drop_duplicates(['panid','time'], take_last=True)
+    i.dropna(axis = 0 , how='any')
+    
 
 # Stack dfs
 df = pd.concat(list_of_dfs, ignore_index = True)
@@ -60,7 +62,7 @@ missing = np.isnan(df)
 #anymissing = sum(missing, axis = 1)
 #print("Number of NaNs: ")
 #print(sum(missing))
-df.dropna(axis = 0 , how='any') # keep only the ones where no column is missing.
+#df.dropna(axis = 0 , how='any') # keep only the ones where no column is missing.
 #print("Rows dropped: ")
 #print(str(sum(anymissing)))
 #del [anymissing, missing]
