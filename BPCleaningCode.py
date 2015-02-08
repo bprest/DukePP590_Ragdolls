@@ -17,7 +17,7 @@ with open(data_dir + "/" + "File1.txt") as myfile:
     head = [next(myfile) for x in xrange(N)]
 print head
 
-# Read in the data.
+## Read in the data.
 pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
 list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
 
