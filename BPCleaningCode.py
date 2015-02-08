@@ -42,8 +42,8 @@ df = pd.concat(list_of_dfs, ignore_index = True)
 # No full duplicates
 
 # Determine duplicates on Panid & Time.
-dupe_on_panidtime_tb = df.duplicated(['panid','time'])
-dupe_on_panidtime_bt = df.duplicated(['panid','time'], take_last=True)
+#dupe_on_panidtime_tb = df.duplicated(['panid','time'])
+#dupe_on_panidtime_bt = df.duplicated(['panid','time'], take_last=True)
 
 # Print Number of Duplicated Rows (on Panid & Time)
 #print("Number of Duplicated Rows on Panid & Time: ")
@@ -54,11 +54,11 @@ dupe_on_panidtime_bt = df.duplicated(['panid','time'], take_last=True)
 #print(df[dupe_on_panidtime_bt | dupe_on_panidtime_tb])
 # Ack! There are at least 12 duplicate values (same panid, same time). Only take the last set of these.
 
-# drop duplicated values, taking only the last.
+ #drop duplicated values, taking only the last.
 df = df.drop_duplicates(['panid','time'], take_last=True)
-del [dupe_on_panidtime_bt, dupe_on_panidtime_tb]
+#del [dupe_on_panidtime_bt, dupe_on_panidtime_tb]
 # check for NaNs. Drop full row if any column is missing.
-missing = np.isnan(df)
+#missing = np.isnan(df)
 #anymissing = sum(missing, axis = 1)
 #print("Number of NaNs: ")
 #print(sum(missing))
