@@ -12,14 +12,14 @@ assignmentfile = "SME and Residential allocations.csv"
 
 # Read first 10 lines of the file to determine type.
 # This reveals that it's space delimited
-#N = 10
-#with open(data_dir + "/" + "File1.txt") as myfile:
-#    head = [next(myfile) for x in xrange(N)]
-#print head
+N = 10
+with open(data_dir + "/" + "File1.txt") as myfile:
+    head = [next(myfile) for x in xrange(N)]
+print head
 
 # Read in the data.
 pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
-list_of_dfs = [ pd.read_csv(v, names = ['panid', 'date', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
 df = pd.concat(list_of_dfs, ignore_index = True)
 
 #################### temporary, for debugging code.
