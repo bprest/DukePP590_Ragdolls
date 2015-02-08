@@ -24,48 +24,26 @@ list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", head
 
 # Remove Duplicates from each df
 for i in list_of_dfs:
-    i.drop_duplicates(['panid','time'], take_last=True)
-    i.dropna(axis = 0 , how='any')
+    #i.drop_duplicates(['panid','time'], take_last=True)
+    #i.dropna(axis = 0 , how='any')
+    hour = i.time % 100
+    day = (i.time - hour)/100
+    droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298)) 
+    i.drop(droprows, inplace = True)
+    replacerows = ((day==669) + (day==298)) & ((hour>=6) & (hour<=50))
+    i.time[replacerows] = i.time[replacerows] - 2
     
-
+#df[hour>50] # weird. panid 1208
+##[min(df.panid[hour>50]), max(df.panid[hour>50])] # weird. panid 1208 has hour readings up to 95. Lets drop that one.
+#droprows = (df.panid==1208)
+##df.drop(droprows, inplace = True) # this failed on me. not sure why
+#df = df[~droprows]
+ 
+for i in range(0,6):
+    print(len(list_of_dfs[i]))
 # Stack dfs
 df = pd.concat(list_of_dfs, ignore_index = True)
 
-#################### temporary, for debugging code.
-#df=pd.read_csv(data_dir+"File1.txt", names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) 
-#################### temporary, for debugging code.
-
-### Now clean the data
-# Determine number of fully duplicated rows.
-#print("Number of Fully Duplicated Rows: ") 
-#print(sum(df.duplicated())) 
-# No full duplicates
-
-# Determine duplicates on Panid & Time.
-#dupe_on_panidtime_tb = df.duplicated(['panid','time'])
-#dupe_on_panidtime_bt = df.duplicated(['panid','time'], take_last=True)
-
-# Print Number of Duplicated Rows (on Panid & Time)
-#print("Number of Duplicated Rows on Panid & Time: ")
-#print(sum(dupe_on_panidtime_tb))
-
-# Print duplicated values
-#print("Duplicates on Panid & Time: ")
-#print(df[dupe_on_panidtime_bt | dupe_on_panidtime_tb])
-# Ack! There are at least 12 duplicate values (same panid, same time). Only take the last set of these.
-
- #drop duplicated values, taking only the last.
-df = df.drop_duplicates(['panid','time'], take_last=True)
-#del [dupe_on_panidtime_bt, dupe_on_panidtime_tb]
-# check for NaNs. Drop full row if any column is missing.
-#missing = np.isnan(df)
-#anymissing = sum(missing, axis = 1)
-#print("Number of NaNs: ")
-#print(sum(missing))
-#df.dropna(axis = 0 , how='any') # keep only the ones where no column is missing.
-#print("Rows dropped: ")
-#print(str(sum(anymissing)))
-#del [anymissing, missing]
 
 ###### Fix daylight savings issues:
 #* Day 452 has 2 missing entries numbered 2 and 3
