@@ -44,6 +44,11 @@ for i in range(0,6):
 # Stack dfs
 df = pd.concat(list_of_dfs, ignore_index = True)
 
+# Efficient Stack
+df = list_of_dfs[0]
+for i in range(5,0,-1):
+    df = pd.concat([df, list_of_dfs[i]], ignore_index = True)
+    del list_of_dfs[i]
 
 ###### Fix daylight savings issues:
 #* Day 452 has 2 missing entries numbered 2 and 3
