@@ -24,8 +24,8 @@ list_of_dfs = [ pd.read_csv(v, names = ['panid', 'time', 'kwh'], sep = " ", head
 
 # Remove Duplicates from each df
 for i in list_of_dfs:
-    #i.drop_duplicates(['panid','time'], take_last=True)
-    #i.dropna(axis = 0 , how='any')
+    i.drop_duplicates(['panid','time'], take_last=True)
+    i.dropna(axis = 0 , how='any')
     hour = i.time % 100
     day = (i.time - hour)/100
     droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298)) 
