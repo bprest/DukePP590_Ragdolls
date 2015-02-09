@@ -36,13 +36,13 @@ for i in list_of_dfs:
     i.time[replacerows] = i.time[replacerows] - 2
 
 for i in range(0,6):
-    hour = list_of_dfs[1].time % 100
-    print(list_of_dfs[1][hour>50])
+    hour = list_of_dfs[i].time % 100
+    print(list_of_dfs[i][hour>50])
 #[min(list_of_dfs[0].panid[hour>50]), max(list_of_dfs[0].panid[hour>50])] # weird. panid 1208 has hour readings up to 95. Lets drop that one.
 #droprows = (df.panid==1208)
 
 df = pd.concat(list_of_dfs, ignore_index = True)
-
+del list_of_dfs
 # Load in treatment assignment info.
 assignment = pd.read_excel(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
 assignment = assignment[assignment.Code==1] # keep only the residential guys
