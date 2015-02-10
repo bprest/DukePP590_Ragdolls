@@ -23,7 +23,9 @@ print head
 
 ## Read in the data.
 pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
-list_of_dfs = [ pd.read_table(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+list_of_dfs = [ pd.read_table(v, skiprows = 6*10**6, nrows = 1.5*10**6, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
+## For the full data, use this instead:
+#list_of_dfs = [ pd.read_table(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
 
 # Remove Duplicates from each df
 for i in list_of_dfs:
@@ -42,7 +44,8 @@ for i in range(5,0,-1):
     df = pd.concat([df, list_of_dfs[i]], ignore_index = True)
     del list_of_dfs[i]
     
-#df[hour>50] # weird. panid 1208 and 5221 have hour readings up to 95. Lets drop those meters.
+#df[hour>50] # weird. panid 1208 and 5221 have hour readings up to 95. Lets drop those.
+# Note: in the shortened data, these anomalous results do not appear. But we drop them anyway.
 droprows = (df.panid==1208) | (df.panid==5221)
 df = df[~droprows]
 
