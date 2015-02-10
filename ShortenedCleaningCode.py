@@ -1,4 +1,3 @@
-#%reset -f
 from __future__ import division  # imports the division capacity from the future version of Python
 from pandas import Series, DataFrame
 import pandas as pd
@@ -24,10 +23,10 @@ print head
 ## Read in the data.
 pathlist = [data_dir + v for v in os.listdir(data_dir) if v.startswith("File")]
 list_of_dfs = [ pd.read_table(v, skiprows = 6*10**6, nrows = 1.5*10**6, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
-## For the full data, use this instead:
+## For the full data, use this line instead:
 #list_of_dfs = [ pd.read_table(v, names = ['panid', 'time', 'kwh'], sep = " ", header=None, na_values=['-','NA']) for v in pathlist]
 
-# Remove Duplicates from each df
+# Clean each df separately (this is for efficiency, when running the full data)
 for i in list_of_dfs:
     i.drop_duplicates(['panid','time'], take_last=True)
     i.dropna(axis = 0 , how='any')
@@ -38,7 +37,7 @@ for i in list_of_dfs:
     replacerows = ((day==669) | (day==298)) & ((hour>=6) & (hour<=50))
     i.time[replacerows] = i.time[replacerows] - 2
 
-# Efficient Stack
+# Stack
 df = list_of_dfs[0]
 for i in range(5,0,-1):
     df = pd.concat([df, list_of_dfs[i]], ignore_index = True)
@@ -58,6 +57,7 @@ assignment.columns = ['panid','tariff','stimulus']
 # Merge with panel data.
 mergeddf = pd.merge(df,assignment, on = ['panid'])
 
+# Write to csv to save it.
 mergeddf.to_csv(main_dir + "/merged_data.csv", sep = ',')
 
 print("done!")
