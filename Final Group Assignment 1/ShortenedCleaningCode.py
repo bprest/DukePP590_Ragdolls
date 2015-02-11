@@ -46,7 +46,7 @@ for i in list_of_dfs:
 
 # Stack
 # For the longer data set, it was more efficient to concat 2 dfs and then delete in memory
-# in order to conserve reduce RAM usage
+# in order to reduce RAM usage
 df = list_of_dfs[0]
 for i in range(5,0,-1):
     df = pd.concat([df, list_of_dfs[i]], ignore_index = True)
