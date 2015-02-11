@@ -32,10 +32,14 @@ for i in list_of_dfs:
     i.dropna(axis = 0 , how='any')
     hour = i.time % 100
     day = (i.time - hour)/100
-    droprows = ((hour==4) | (hour==5)) & ((day==669) | (day==298)) 
+    # Drop and replace hours on the October DST days.
+    droprows = ((hour==5) | (hour==6)) & ((day==669) | (day==298)) 
     i.drop(droprows, inplace = True)
-    replacerows = ((day==669) | (day==298)) & ((hour>=6) & (hour<=50))
+    replacerows = ((day==669) | (day==298)) & ((hour>=7) & (hour<=50))
     i.time[replacerows] = i.time[replacerows] - 2
+    # Now replace hours on the March DST day.
+    replacerows = ((day==452)) & ((hour>=5))    
+    i.time[replacerows] = i.time[replacerows] + 2
 
 # Stack
 df = list_of_dfs[0]
