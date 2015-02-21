@@ -2,17 +2,13 @@ from __future__ import division  # imports the division capacity from the future
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
-import os
-import xlrd
 import time
-import csv
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 
 print(time.ctime())
 main_dir = u'C:/Users/bcp17/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
 data_dir = main_dir+"/UnzippedData/"
-git_dir = "C:/Users/bcp17/OneDrive/Grad School/GitHub/PubPol590"
 assignmentfile = "SME and Residential allocations.xlsx"
 
 ## Read in the data
@@ -21,8 +17,12 @@ pathlist = [data_dir + "File" + str(v) + ".txt" for v in range(1,7)]
 df = pd.concat([pd.read_table(v, sep = " ", names = ['panid','time','kwh']) for v in pathlist], ignore_index = True)
 #df = pd.concat([pd.read_table(v, sep = " ", names = ['panid','time','kwh'], nrows = 1.5*10**6) for v in pathlist], ignore_index = True)
 
-print(time.ctime())
-# Clean each df separately (this is for efficiency, when running the full data)
+# Group variables on panid and day, then sum consumption across each day.
+df['day'] = (df.time - (df.time % 100))/100
+hourgrp = df.groupby(['panid','day'])
+del df
+df_daily = DataFrame(zip(hourgrp.panid.mean(),hourgrp.day.mean(),hourgrp['kwh'].sum()), columns = ['panid','day','kwh'])
+del hourgrp
 
 # Load in treatment assignment info.
 assignment = pd.read_excel(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
@@ -37,23 +37,23 @@ keeprows = ((assignment.tariff =="E") & (assignment.stimulus == "E")) | ((assign
 assignment = assignment[keeprows]
 
 # Merge with panel data.
-df = pd.merge(df,assignment, on = ['panid'])
-del assignment
+df_daily = pd.merge(df_daily,assignment, on = ['panid'])
+del [assignment, keeprows]
 
-# Group variables on tariff and time. Note that we can ignore the stimulus, since within tariff A, stimulus is always 1.
-grp = df.groupby(['tariff','time'])
+# Group on treatment status and day
+grp = df_daily.groupby(['tariff','day'])
 
-trt = {k[1]: df.kwh[v].values for k,v in grp.groups.iteritems() if k[0]=="A"} 
-ctrl = {k[1]: df.kwh[v].values for k,v in grp.groups.iteritems() if k[0]=="E"}
-del [df, grp]
+trt = {k[1]: df_daily.kwh[v].values for k,v in grp.groups.iteritems() if k[0]=="A"} 
+ctrl = {k[1]: df_daily.kwh[v].values for k,v in grp.groups.iteritems() if k[0]=="E"}
+del [df_daily, grp]
 
 keys = trt.keys()
 
-# create dataframes of this info
+# create dataframes of tstats over time
 tstats = DataFrame([(k, np.abs(ttest_ind(trt[k],ctrl[k], equal_var=False)[0])) for k in keys], columns=['time','tstat'])
 del [trt, ctrl, keys]
-tstats.sort(['time'], inplace=True) # inplace replaces it (assigns t_p to the new thing. equivalent to t_p = t_p.sort(['date'])
-tstats.reset_index(inplace=True, drop=True) # By default, it saves the old index. But drop=True drops this.
+tstats.sort(['time'], inplace=True)
+tstats.reset_index(inplace=True, drop=True)
 
 # Plotting -----------------------------------------
 fig1 = plt.figure()
@@ -62,5 +62,10 @@ ax1.plot(tstats['tstat'])
 ax1.axhline(2, color='red', linestyle="--")
 ax1.set_title('t-stats over time')
 plt.show()
+
+tstats.to_csv(main_dir + "/tstats_daily.csv", sep = ',')
+
+share_over_two = sum(tstats.tstat>2)/tstats.tstat.count()
+print("Share of tstats>2 is " + str(share_over_two))
 print("done!")
 print(time.ctime())
