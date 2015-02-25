@@ -42,17 +42,17 @@ assignment = assignment[(assignment.code == 1) & ((assignment.stimulus == "E")
 df = pd.merge(df, assignment, on = ['panid'])
 
 # AGGREGATION (daily)-----------------------------------------------------------
-grp_daily = df.groupby(['year', 'month', 'day', 'panid', 'tariff'])
+grp_daily = df.groupby(['year', 'month', 'day', 'panid', 'tariff', 'stimulus'])
 agg_daily = grp_daily['kwh'].sum()
 
 agg_daily = agg_daily.reset_index()
-grp_daily = agg_daily.groupby(['year', 'month', 'day', 'tariff'])
+grp_daily = agg_daily.groupby(['year', 'month', 'day', 'tariff', 'stimulus'])
 
 # Split up T/C (daily)
 trt_daily = {(k[0], k[1], k[2]): agg_daily.kwh[v].values 
-        for k,v in grp_daily.groups.iteritems() if k[3] == 'A'}
+        for k,v in grp_daily.groups.iteritems() if k[3] == 'A' or k[4] == '1'}
 ctrl_daily = {(k[0], k[1], k[2]): agg_daily.kwh[v].values 
-        for k,v in grp_daily.groups.iteritems() if k[3] == 'E'}
+        for k,v in grp_daily.groups.iteritems() if k[3] == 'E' and k[4] == 'E'}
 keys_daily = trt_daily.keys()
 
 # tstats and pvals (daily)
@@ -83,17 +83,17 @@ ax2.axvline(172, color = 'g', linestyle = '--')
 ax2.set_title('Daily p-values over time')
 
 # AGGREGATION (monthly)---------------------------------------------------------
-grp_monthly = df.groupby(['year', 'month', 'panid', 'tariff'])
+grp_monthly = df.groupby(['year', 'month', 'panid', 'tariff', 'stimulus'])
 agg_monthly = grp_monthly['kwh'].sum()
 
 agg_monthly = agg_monthly.reset_index()
-grp_monthly = agg_monthly.groupby(['year', 'month', 'tariff'])
+grp_monthly = agg_monthly.groupby(['year', 'month', 'tariff', 'stimulus'])
 
 # split up T/C (monthly)
 trt_monthly = {(k[0], k[1]): agg_monthly.kwh[v].values 
-        for k,v in grp_monthly.groups.iteritems() if k[2] == 'A'}
+        for k,v in grp_monthly.groups.iteritems() if k[2] == 'A' or k[3] == '1'}
 ctrl_monthly = {(k[0], k[1]): agg_monthly.kwh[v].values 
-        for k,v in grp_monthly.groups.iteritems() if k[2] == 'E'}
+        for k,v in grp_monthly.groups.iteritems() if k[2] == 'E' and k[3] == 'E'}
 keys_monthly = trt_monthly.keys()
 
 # tstats and pvals (monthly)
