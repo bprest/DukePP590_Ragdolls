@@ -36,22 +36,16 @@ df = pd.merge(df,assignment, on = ['panid'])
 del [assignment, keeprows]
 
 # Group variables on panid and day, then sum consumption across each day.
-df['hour'] = (df.time % 100)
-df['day'] = (df.time - df['hour'])/100
-
+df['hour_cer'] = (df.time % 100)
+df['day_cer'] = (df.time - df['hour_cer'])/100
+del df['time']
 # Pull in timestamps
 tscorr = pd.read_csv(main_dir+"/"+timeseriescorrection, header=0, parse_dates=[1])
-tscorr = tscorr[['ts','hour_cer','day_cer']]
-tscorr.rename(columns={'hour_cer': 'hour', 'day_cer': 'day'}, inplace=True)
+tscorr = tscorr[['year','month','day','hour_cer','day_cer']]
 
-df = pd.merge(df,tscorr, on=['day','hour'])
+df = pd.merge(df,tscorr, on=['day_cer','hour_cer'])
 del tscorr
-del [[df['time'],df['day'],df['hour']]]
-
-# Create year, month, day variables
-df['year'] = df['ts'].apply(lambda x: x.year)
-df['month'] = df['ts'].apply(lambda x: x.month)
-df['day'] = df['ts'].apply(lambda x: x.day)
+del [[df['day_cer'],df['hour_cer']]]
 
 # Aggregate on day
 daygrp = df.groupby(['panid','tariff','year','month','day'])
@@ -121,8 +115,8 @@ ax4.axvline(x=172, color='green', linestyle="--")
 ax4.set_title('Daily p-values over time')
 plt.show()
 
-t_p_daily.to_csv(main_dir + "/tstats_daily.csv", sep = ',')
-t_p_monthly.to_csv(main_dir + "/tstats_monthly.csv", sep = ',')
+#t_p_daily.to_csv(main_dir + "/tstats_daily.csv", sep = ',')
+#t_p_monthly.to_csv(main_dir + "/tstats_monthly.csv", sep = ',')
 
 share_under_five_pct_daily   = sum(t_p_daily.pval<0.05)/t_p_daily.pval.count()
 share_under_five_pct_monthly = sum(t_p_monthly.pval<0.05)/t_p_monthly.pval.count()
