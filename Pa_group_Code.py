@@ -20,7 +20,7 @@ df_duplicates_dropped = df[unique]
 
 df_cleaned = df_duplicates_dropped.dropna()
 
-df_assign = pd.read_csv(root + SME_file, usecols = range(0,5))
+df_assign = pd.read_excel(root + SME_file, usecols = range(0,5))
 
 df_merge = pd.merge(df_cleaned, df_assign)
 
