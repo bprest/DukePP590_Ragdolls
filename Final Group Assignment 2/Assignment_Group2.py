@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 
 print(time.ctime())
-main_dir = u'C:/Users/bcp17/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
+main_dir = u'C:/Users/Brianprest/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
 data_dir = main_dir+"/UnzippedData/"
 assignmentfile = "SME and Residential allocations.xlsx"
 timeseriescorrection = "timeseries_correction.csv"
