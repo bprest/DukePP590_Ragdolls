@@ -2,123 +2,125 @@ from __future__ import division  # imports the division capacity from the future
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
-import os
-import xlrd
-from scipy.stats import ttest_ind
+import time
 import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
 
-main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/"
-root = main_dir + "Data/Group/"
+print(time.ctime())
+main_dir = u'C:/Users/bcp17/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
+data_dir = main_dir+"/UnzippedData/"
 assignmentfile = "SME and Residential allocations.xlsx"
+timeseriescorrection = "timeseries_correction.csv"
 
-paths = [os.path.join(root, v) for v in os.listdir(root) if v.startswith("File")]
+## Read in the data
+# Make a list of file paths for each of the file and then read it in as a dataframe
+pathlist = [data_dir + "File" + str(v) + ".txt" for v in range(1,7)]
+df = pd.concat([pd.read_table(v, sep = " ", names = ['panid','time','kwh']) for v in pathlist], ignore_index = True)
+#df = pd.concat([pd.read_table(v, sep = " ", names = ['panid','time','kwh'], nrows = 1.5*10**6) for v in pathlist], ignore_index = True)
 
-# READ IN THE DATA--------------------------------------------------------------
-df = pd.concat([pd.read_table(v, names = ['panid', 'time', 'kwh'], sep = ' ') 
-    for v in paths], ignore_index = True)
+# Load in treatment assignment info.
+assignment = pd.read_excel(main_dir+"/"+assignmentfile, sep = ",", na_values=[' ','-','NA'], usecols = range(0,4))
+assignment = assignment[assignment.Code==1] # keep only the residential guys
+assignment = assignment[[0,2,3]] # drop "Code" now, since it's always 1.
+assignment.columns = ['panid','tariff','stimulus']
 
-## Create new variables
-df['hour'] = (df['time'] % 100)
-df['day'] = (df['time'] - df['hour'])/100
+# keep only the control guys (E,E) or guys with tariff A & bi-monthly only stimulus (A,1).
+keeprows = ((assignment.tariff =="E") & (assignment.stimulus == "E")) | ((assignment.tariff == "A") & (assignment.stimulus == "1"))
 
-# MERGE WITH TIME CORRECTION FILE-----------------------------------------------
-df_time_correction = pd.read_csv(main_dir + "Data/Demo9/timeseries_correction.csv",
-    sep = ',', parse_dates=[1])
+# trim out all others
+assignment = assignment[keeprows]
 
-df_time_correction = df_time_correction[['ts', 'year', 'month', 'hour_cer', 'day_cer']]
-df_time_correction.rename(columns = {'hour_cer': 'hour', 'day_cer': 'day'}, 
-    inplace = True)
+# Merge with panel data.
+df = pd.merge(df,assignment, on = ['panid'])
+#df_monthly = pd.merge(df_monthly,assignment, on = ['panid'])
+del [assignment, keeprows]
 
-df = pd.merge(df, df_time_correction, on = ['day', 'hour'])
+# Group variables on panid and day, then sum consumption across each day.
+df['hour_cer'] = (df.time % 100)
+df['day_cer'] = (df.time - df['hour_cer'])/100
+del df['time']
+# Pull in timestamps
+tscorr = pd.read_csv(main_dir+"/"+timeseriescorrection, header=0, parse_dates=[1])
+tscorr = tscorr[['year','month','day','hour_cer','day_cer']]
 
-# ASSIGNMENT--------------------------------------------------------------------
-assignment = pd.read_excel(root + assignmentfile, sep = ',', usecols = range(0,4))
-assignment.columns = ['panid', 'code', 'tariff', 'stimulus']
-    
-assignment = assignment[(assignment.code == 1) & ((assignment.stimulus == "E") 
-    | (assignment.stimulus == "1")) & ((assignment.tariff == "A") 
-    | (assignment.tariff == "E"))]
+df = pd.merge(df,tscorr, on=['day_cer','hour_cer'])
+del tscorr
+del [[df['day_cer'],df['hour_cer']]]
 
-df = pd.merge(df, assignment, on = ['panid'])
+# Aggregate on day
+daygrp = df.groupby(['panid','tariff','year','month','day'])
+df_daily= daygrp['kwh'].sum().reset_index()
 
-# AGGREGATION (daily)-----------------------------------------------------------
-grp_daily = df.groupby(['year', 'month', 'day', 'panid', 'tariff', 'stimulus'])
-agg_daily = grp_daily['kwh'].sum()
+# Aggregate on month
+monthgrp = df.groupby(['panid','tariff','year','month'])
+df_monthly = monthgrp['kwh'].sum().reset_index()
+del df
+del [daygrp, monthgrp]
 
-agg_daily = agg_daily.reset_index()
-grp_daily = agg_daily.groupby(['year', 'month', 'day', 'tariff', 'stimulus'])
+# Group on treatment status and day
+grp_daily = df_daily.groupby(['tariff','year','month','day'])
+trt_daily = {(k[1],k[2],k[3]): df_daily.kwh[v].values for k,v in grp_daily.groups.iteritems() if k[0]=="A"} 
+ctrl_daily = {(k[1],k[2],k[3]): df_daily.kwh[v].values for k,v in grp_daily.groups.iteritems() if k[0]=="E"}
+del [df_daily, grp_daily]
 
-# Split up T/C (daily)
-trt_daily = {(k[0], k[1], k[2]): agg_daily.kwh[v].values 
-        for k,v in grp_daily.groups.iteritems() if k[3] == 'A' or k[4] == '1'}
-ctrl_daily = {(k[0], k[1], k[2]): agg_daily.kwh[v].values 
-        for k,v in grp_daily.groups.iteritems() if k[3] == 'E' and k[4] == 'E'}
+# Group on treatment status and month
+grp_monthly = df_monthly.groupby(['tariff','year','month'])
+trt_monthly = {(k[1],k[2]): df_monthly.kwh[v].values for k,v in grp_monthly.groups.iteritems() if k[0]=="A"} 
+ctrl_monthly = {(k[1],k[2]): df_monthly.kwh[v].values for k,v in grp_monthly.groups.iteritems() if k[0]=="E"}
+del [df_monthly, grp_monthly]
+
 keys_daily = trt_daily.keys()
-
-# tstats and pvals (daily)
-tstats_daily = DataFrame([(k[0], k[1], k[2], np.abs(ttest_ind(trt_daily[k], 
-    ctrl_daily[k], equal_var = False)[0])) for k in keys_daily], 
-    columns = ['year', 'month', 'day', 'tstat_daily'])
-pvals_daily = DataFrame([(k[0], k[1], k[2], (ttest_ind(trt_daily[k], 
-    ctrl_daily[k], equal_var = False)[1])) for k in keys_daily], 
-    columns = ['year', 'month', 'day', 'pval_daily'])
-t_p_daily = pd.merge(tstats_daily, pvals_daily)
-
-# sort and reset (daily)
-t_p_daily.sort(['year', 'month', 'day'], inplace = True)
-t_p_daily.reset_index(inplace = True, drop = True)
-
-# PLOTTING (daily)--------------------------------------------------------------
-fig_daily= plt.figure()
-ax1 = fig_daily.add_subplot(2,1,1)
-ax1.plot(t_p_daily['tstat_daily'])
-ax1.axhline(2, color = 'r', linestyle = '--')
-ax1.axvline(172, color = 'g', linestyle = '--')
-ax1.set_title('Daily t-stats over time')
-
-ax2 = fig_daily.add_subplot(2,1,2)
-ax2.plot(t_p_daily['pval_daily'])
-ax2.axhline(0.05, color = 'r', linestyle = '--')
-ax2.axvline(172, color = 'g', linestyle = '--')
-ax2.set_title('Daily p-values over time')
-
-# AGGREGATION (monthly)---------------------------------------------------------
-grp_monthly = df.groupby(['year', 'month', 'panid', 'tariff', 'stimulus'])
-agg_monthly = grp_monthly['kwh'].sum()
-
-agg_monthly = agg_monthly.reset_index()
-grp_monthly = agg_monthly.groupby(['year', 'month', 'tariff', 'stimulus'])
-
-# split up T/C (monthly)
-trt_monthly = {(k[0], k[1]): agg_monthly.kwh[v].values 
-        for k,v in grp_monthly.groups.iteritems() if k[2] == 'A' or k[3] == '1'}
-ctrl_monthly = {(k[0], k[1]): agg_monthly.kwh[v].values 
-        for k,v in grp_monthly.groups.iteritems() if k[2] == 'E' and k[3] == 'E'}
 keys_monthly = trt_monthly.keys()
 
-# tstats and pvals (monthly)
-tstats_monthly = DataFrame([(k[0], k[1], np.abs(ttest_ind(trt_monthly[k], 
-    ctrl_monthly[k], equal_var = False)[0])) for k in keys_monthly], 
-    columns = ['year', 'month', 'tstat_monthly'])    
-pvals_monthly = DataFrame([(k[0], k[1], (ttest_ind(trt_monthly[k], 
-    ctrl_monthly[k], equal_var = False)[1])) for k in keys_monthly], 
-    columns = ['year', 'month', 'pval_monthly'])
-t_p_monthly = pd.merge(tstats_monthly, pvals_monthly)
+# create dataframes of tstats over time
+tstats_daily = DataFrame([(k[0], k[1], k[2], np.abs(ttest_ind(trt_daily[k],ctrl_daily[k], equal_var=False)[0])) for k in keys_daily], columns=['year','month','day','tstat'])
+pvals_daily  = DataFrame([(k[0], k[1], k[2], np.abs(ttest_ind(trt_daily[k],ctrl_daily[k], equal_var=False)[1])) for k in keys_daily], columns=['year','month','day','pval'])
+t_p_daily = pd.merge(tstats_daily,pvals_daily)
+t_p_daily.sort(['year','month','day'], inplace=True)
+t_p_daily.reset_index(inplace=True, drop=True)
 
-# sort and reset (monthly)
-t_p_monthly.sort(['year', 'month'], inplace = True)
-t_p_monthly.reset_index(inplace = True, drop = True)
+tstats_monthly = DataFrame([(k[0], k[1], np.abs(ttest_ind(trt_monthly[k],ctrl_monthly[k], equal_var=False)[0])) for k in keys_monthly], columns=['year','month','tstat'])
+pvals_monthly  = DataFrame([(k[0], k[1], np.abs(ttest_ind(trt_monthly[k],ctrl_monthly[k], equal_var=False)[1])) for k in keys_monthly], columns=['year','month','pval'])
+t_p_monthly = pd.merge(tstats_monthly,pvals_monthly)
+t_p_monthly.sort(['year','month'], inplace=True)
+t_p_monthly.reset_index(inplace=True, drop=True)
 
-# PLOTTING (monthly)------------------------------------------------------------
-fig_monthly= plt.figure()
-ax3 = fig_monthly.add_subplot(2,1,1)
-ax3.plot(t_p_monthly['tstat_monthly'])
-ax3.axhline(2, color = 'r', linestyle = '--')
-ax3.axvline(6, color = 'g', linestyle = '--')
-ax3.set_title('Monthly t-stats over time')
+del [trt_daily, ctrl_daily,trt_monthly, ctrl_monthly, keys_daily, keys_monthly]
+del [tstats_daily, tstats_monthly, pvals_daily, pvals_monthly]
 
-ax4 = fig_monthly.add_subplot(2,1,2)
-ax4.plot(t_p_monthly['pval_monthly'])
-ax4.axhline(0.05, color = 'r', linestyle = '--')
-ax4.axvline(6, color = 'g', linestyle = '--')
-ax4.set_title('Monthly p-values over time')
+# Plotting -----------------------------------------
+fig1 = plt.figure()
+ax1 = fig1.add_subplot(2,1,1) 
+ax1.plot(t_p_monthly.tstat)
+ax1.axhline(2, color='red', linestyle="--")
+ax1.axvline(x=6,ymin=0, ymax=3, color='green', linestyle="--")
+ax1.set_title('Monthly t-stats over time')
+ax2 = fig1.add_subplot(2,1,2) 
+ax2.plot(t_p_monthly.pval)
+ax2.axhline(0.05, color='red', linestyle="--")
+ax2.axvline(x=6,ymin=0, ymax=1, color='green', linestyle="--")
+ax2.set_title('Monthly p-values over time')
+plt.show()
+
+fig2 = plt.figure()
+ax3 = fig2.add_subplot(2,1,1) 
+ax3.plot(t_p_daily.tstat)
+ax3.axhline(2, color='red', linestyle="--")
+ax3.axvline(x=172, color='green', linestyle="--")
+ax3.set_title('Daily t-stats over time')
+ax4 = fig2.add_subplot(2,1,2) 
+ax4.plot(t_p_daily.pval)
+ax4.axhline(0.05, color='red', linestyle="--")
+ax4.axvline(x=172, color='green', linestyle="--")
+ax4.set_title('Daily p-values over time')
+plt.show()
+
+#t_p_daily.to_csv(main_dir + "/tstats_daily.csv", sep = ',')
+#t_p_monthly.to_csv(main_dir + "/tstats_monthly.csv", sep = ',')
+
+share_under_five_pct_daily   = sum(t_p_daily.pval<0.05)/t_p_daily.pval.count()
+share_under_five_pct_monthly = sum(t_p_monthly.pval<0.05)/t_p_monthly.pval.count()
+print("Share of daily p-values<0.05 is " + str(share_under_five_pct_daily))
+print("Share of monthly p-values<0.05 is " + str(share_under_five_pct_monthly))
+print("done!")
+print(time.ctime())
