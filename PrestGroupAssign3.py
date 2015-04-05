@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import statsmodels.api as sm
 
-main_dir = u'C:/Users/Brianprest/OneDrive/Grad School/2015-Spring/Big Data/data/raw/3_task_data/'
-#main_dir = u'C:/Users/bcp17/OneDrive/Grad School/2015-Spring/Big Data/data/raw/3_task_data/'
+#main_dir = u'C:/Users/Brianprest/OneDrive/Grad School/2015-Spring/Big Data/data/raw/3_task_data/'
+main_dir = u'C:/Users/bcp17/OneDrive/Grad School/2015-Spring/Big Data/data/raw/3_task_data/'
 root = main_dir
 allocation = "allocation_subsamp.csv"
 kwh = "kwh_redux_pretrial.csv"
