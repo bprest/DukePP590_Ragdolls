@@ -5,7 +5,7 @@ import os
 from pandas import Series, DataFrame
 import statsmodels.api as sm
 
-# SECTION 1: Finding Imbalance--------------------------------------------------
+########################## SECTION 1: Finding Imbalanc #########################
 main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/Data/task4/"
 
 os.chdir(main_dir)
@@ -14,6 +14,7 @@ from logit_functions import *
 df = pd.read_csv(main_dir + "task_4_kwh_w_dummies_wide.csv")
 df = df.dropna()
 
+## 1.2.1 Test for imbalance running Logit
 tariffs = [v for v in pd.unique(df['tariff']) if v != 'E']
 stimuli = [v for v in pd.unique(df['stimulus']) if v != 'E']
 tariffs.sort()
@@ -26,7 +27,8 @@ for i in tariffs:
     for j in stimuli:
         logit_results, df_logit = do_logit(df_pretrial, i, j, add_D = None, mc = False)
 
-# create means
+## 1.2.2 Test for imbalance with a "Quick Means Comparison"
+# create mean
 grp = df_logit.groupby('tariff')
 df_mean = grp.mean().transpose()
 df_mean.C - df_mean.E
@@ -40,25 +42,33 @@ tstats = top/bottom
 sig = tstats[np.abs(tstats) > 2]
 sig.name = 't-stats'
 
-# SECTION 2: Propensity Score Weighting-----------------------------------------
+##################### SECTION 2: Propensity Score Weighting ####################
+## 2.1 Get the predicted values of the logit model
 df_logit['p_val'] = logit_results.predict()
-df_logit['trt'] = 0 + (df_logit['tariff'] == 'C')
 
+## 2.2 Generate a column of weights called w
+df_logit['trt'] = 0 + (df_logit['tariff'] == 'C')
 df_logit['w'] = np.sqrt(df_logit['trt']/df_logit['p_val'] + (1 - df_logit['trt'])/(1 - df_logit['p_val']))
 
+## 2.3 Create a smaller dataframe with just the IDs, treatments, and weights
 df_w = df_logit[['ID', 'trt', 'w']]
 
-# SECTION 3: Fixed Effects with Weights-----------------------------------------
+##################### SECTION 3: Fixed Effects with Weights ####################
 df = pd.read_csv(main_dir + "task_4_kwh_long.csv")
 df = pd.merge(df, df_logit)
 
+## 3.3 Create the necessary variables
+# A treatment and trial interaction variable
 df['trt_trial'] = df['trt']*df['trial']
 
+# Log of kwh consumption plus 1
 df['log_kwh'] = (df['kwh'] + 1).apply(np.log)
 
+# A year-month column
 df['mo_str'] = np.array(["0" + str(v) if v < 10 else str(v) for v in df['month']])
 df['ym'] = df['year'].apply(str) + "_" + df['mo_str']
 
+## 3.4 Set up regression variables from the merge dataframe
 y = df['log_kwh']
 T = df['trt']
 TP = df['trt_trial']
@@ -69,17 +79,19 @@ X = pd.concat([TP, T, mu], axis=1)
 os.chdir(main_dir)
 from fe_functions import *
 
+## 3.5 De-mean y and X
 ids = df['ID']
 y = demean(y, ids)
 X = demean(X, ids)
 
-## WITHOUT WEIGHTS
+## 3.6 Run the Fixed Effects without AND with weights
+### WITHOUT WEIGHTS
 fe_model = sm.OLS(y, X) # linearly prob model
 fe_results = fe_model.fit() # get the fitted values
 print(fe_results.summary()) # print pretty results (no results given lack of obs)
 
-# WITH WEIGHTS
-## apply weights to data
+### WITH WEIGHTS
+# apply weights to data
 y = y*w # weight each y
 nms = X.columns.values # save column names
 X = np.array([x*w for k, x in X.iteritems()]) # weight each X value

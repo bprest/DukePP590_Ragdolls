@@ -2,13 +2,27 @@ from __future__ import division  # imports the division capacity from the future
 from pandas import Series, DataFrame
 import pandas as pd
 import numpy as np
+<<<<<<< Updated upstream
 import time
+=======
+import os
+import xlrd
+import time
+from scipy.stats import ttest_ind
+>>>>>>> Stashed changes
 import matplotlib.pyplot as plt
 from scipy.stats import ttest_ind
 
+<<<<<<< Updated upstream
 print(time.ctime())
 main_dir = u'C:/Users/Brianprest/Google Drive/THE RAGDOLLS_ 590 Big Data/CER_Data/CER Electricity Revised March 2012'
 data_dir = main_dir+"/UnzippedData/"
+=======
+start = time.time()
+
+main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/"
+root = main_dir + "Data/Group/"
+>>>>>>> Stashed changes
 assignmentfile = "SME and Residential allocations.xlsx"
 timeseriescorrection = "timeseries_correction.csv"
 
@@ -72,6 +86,7 @@ del [df_monthly, grp_monthly]
 keys_daily = trt_daily.keys()
 keys_monthly = trt_monthly.keys()
 
+<<<<<<< Updated upstream
 # create dataframes of tstats over time
 tstats_daily = DataFrame([(k[0], k[1], k[2], np.abs(ttest_ind(trt_daily[k],ctrl_daily[k], equal_var=False)[0])) for k in keys_daily], columns=['year','month','day','tstat'])
 pvals_daily  = DataFrame([(k[0], k[1], k[2], np.abs(ttest_ind(trt_daily[k],ctrl_daily[k], equal_var=False)[1])) for k in keys_daily], columns=['year','month','day','pval'])
@@ -124,3 +139,34 @@ print("Share of daily p-values<0.05 is " + str(share_under_five_pct_daily))
 print("Share of monthly p-values<0.05 is " + str(share_under_five_pct_monthly))
 print("done!")
 print(time.ctime())
+=======
+# tstats and pvals (monthly)
+tstats_monthly = DataFrame([(k[0], k[1], np.abs(ttest_ind(trt_monthly[k], 
+    ctrl_monthly[k], equal_var = False)[0])) for k in keys_monthly], 
+    columns = ['year', 'month', 'tstat_monthly'])    
+pvals_monthly = DataFrame([(k[0], k[1], (ttest_ind(trt_monthly[k], 
+    ctrl_monthly[k], equal_var = False)[1])) for k in keys_monthly], 
+    columns = ['year', 'month', 'pval_monthly'])
+t_p_monthly = pd.merge(tstats_monthly, pvals_monthly)
+
+# sort and reset (monthly)
+t_p_monthly.sort(['year', 'month'], inplace = True)
+t_p_monthly.reset_index(inplace = True, drop = True)
+
+# PLOTTING (monthly)------------------------------------------------------------
+fig_monthly= plt.figure()
+ax3 = fig_monthly.add_subplot(2,1,1)
+ax3.plot(t_p_monthly['tstat_monthly'])
+ax3.axhline(2, color = 'r', linestyle = '--')
+ax3.axvline(6, color = 'g', linestyle = '--')
+ax3.set_title('Monthly t-stats over time')
+
+ax4 = fig_monthly.add_subplot(2,1,2)
+ax4.plot(t_p_monthly['pval_monthly'])
+ax4.axhline(0.05, color = 'r', linestyle = '--')
+ax4.axvline(6, color = 'g', linestyle = '--')
+ax4.set_title('Monthly p-values over time')
+
+end = time.time()
+print 'total time: ', end - start, 'seconds'
+>>>>>>> Stashed changes
