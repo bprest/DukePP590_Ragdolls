@@ -42,7 +42,7 @@ for i in tariffs:
 # over the age of 15 in the house (420.3), and the dummy for having an immersion electric water heater (4701.2).
 # The dummies are not very concerning, but it is concerning that people with 
 # higher past consumption are more likely to be treated.
-#   
+
 df_logit.reset_index(inplace=True)
 # Quick means
 df_mean = df_logit.groupby('tariff').mean().transpose()
@@ -59,14 +59,9 @@ tstats = diff/btm
 sig = tstats[np.abs(tstats)>2]
 sig.name = 'tstats'
 
-
 # The means confirm that the treatment group (C) has higher average consumption
 # than the control group in each month.
 # The tstats for these differences are about 15, making this difference wildly significant.
-
-#d = df['D_410_2']+df['D_410_3']
-#d.mean()
-
 
 #########################################################
 #############        Section 2            ###############
@@ -109,12 +104,15 @@ df_fe['ym'] = df_fe['year'].apply(str) + "_" + df_fe['mo_str']
 y = df_fe['log_kwh']
 T = df_fe['trt']
 TP = df_fe['trt&trial']
+P = df_fe['trial']
 w = df_fe['w']
 mu = pd.get_dummies(df_fe['ym'], prefix = 'ym').iloc[:, 1:-1] # iloc[r:r+2, c:c+2] returns the r and r+1 rows, c and c+1 cols, of its object
-X = pd.concat([T, TP, mu], axis=1)
+#X = pd.concat([T, TP, mu], axis=1)
+X = pd.concat([P, TP, mu], axis=1)
 ids = df_fe['ID']
 
 y = demean(y,ids)
+X = demean(X,ids)
 
 fe_model = sm.OLS(y, X) 
 fe_results = fe_model.fit() 
@@ -131,33 +129,4 @@ X_w = DataFrame(X_w, columns = nms) # update to dataframe; use original names
 fe_w_model = sm.OLS(y_w, X_w) 
 fe_w_results = fe_w_model.fit()
 print(fe_w_results.summary()) 
-
-# Use WLS:
-#wls_results = sm.WLS(y,X,weights=w).fit()
-#wls_results.summary()
-#w2 = np.multiply(w,w)
-#wls_results = sm.WLS(y,X,weights=w2).fit()
-#wls_results.summary()
-
-#### Testing WLS
-#
-## Produce same estimates as above using linear algebra:
-#X_w = np.asmatrix(X_w)
-#y_w = np.asmatrix(y_w).T
-#
-#beta1 = linalg.inv(X_w.T*X_w)*X_w.T*y_w
-#
-## But the formula for WLS is inv(X'WX)X'Wy:
-#
-#W = np.asmatrix(np.diag(w.values))
-#X = np.asmatrix(X)
-#y = np.asmatrix(y).T
-#
-#beta2 = linalg.inv(X.T*W*X)*X.T*W*y
-#
-#w = np.asmatrix(w).T
-##beta2 = linalg.inv(X.T*w.X_w)*X_w.T*y_w
-#
-## Which is the same result as produced by the WLS package
-#wls_results.summary()
 

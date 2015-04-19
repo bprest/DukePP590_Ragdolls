@@ -7,7 +7,7 @@ The dummies are not very concerning, but it is concerning that people with
 higher past consumption are more likely to be treated.
 
 
-                           Logit Regression Results                           
+                     Table 1. Logit Regression Results                           
 ==============================================================================
 Dep. Variable:                      T   No. Observations:                  652
 Model:                          Logit   Df Residuals:                      610
@@ -105,10 +105,10 @@ Section 2
 
 Section 3
 
-i) The results are below. Note that the effect of interest is the effect of treatment during the treatment period, which is the captured by the coefficient 
-on the treatment*trial variable. The unweighted regression shows no significant effect of this variable: a coefficient of -0.02, with a p-value of 0.12.
-By contrast, the weighted regression shows a strongly significant -0.04, or a 4% reduction in electricity use attributable to the program. In both regressions, 
-the seasonal dummies show higher use during the winter months, which makes sense because of higher heating demand. The coefficient on treatment is negative in
+i) The results are in Tables 2 and 3 below. Note that the effect of interest is the effect of treatment during the treatment period, which is the captured by the coefficient 
+on the treatment*trial variable. The unweighted regression shows no significant effect of this variable: a coefficient of -0.008, with a p-value of 0.54.
+By contrast, the weighted regression shows a significant -0.025, or a 2.5% reduction in electricity use attributable to the program. In both regressions, 
+the seasonal dummies show higher use during the winter months, which makes sense because of higher heating demand. The coefficient on the trial period is negative in
 both regressions.
 
 ii) Without weights, we would conclude (at the 5% and 10% significance level) that the program had no effect on electricity usage. Thus, a consultant to CER, 
@@ -123,75 +123,73 @@ how sensitive we find the results to be. One approach would be to redo these cal
 changes dramatically. If it does, it would reduce our confidence in the estimate. If the results seem stable, then perhaps we are comfortable with them.
 
 
-                            OLS Regression Results                            
+                         Table 2. OLS Regression Results                            
 ==============================================================================
-Dep. Variable:                log_kwh   R-squared:                       0.148
-Model:                            OLS   Adj. R-squared:                  0.147
-Method:                 Least Squares   F-statistic:                     113.2
-Date:                Sat, 11 Apr 2015   Prob (F-statistic):          1.33e-196
-Time:                        19:03:01   Log-Likelihood:                 539.11
-No. Observations:                5868   AIC:                            -1060.
-Df Residuals:                    5859   BIC:                            -1000.
+Dep. Variable:                log_kwh   R-squared:                       0.193
+Model:                            OLS   Adj. R-squared:                  0.192
+Method:                 Least Squares   F-statistic:                     155.6
+Date:                Sun, 19 Apr 2015   Prob (F-statistic):          8.07e-265
+Time:                        10:48:19   Log-Likelihood:                 697.35
+No. Observations:                5868   AIC:                            -1377.
+Df Residuals:                    5859   BIC:                            -1317.
 Df Model:                           9                                         
 Covariance Type:            nonrobust                                         
 ==============================================================================
                  coef    std err          t      P>|t|      [95.0% Conf. Int.]
 ------------------------------------------------------------------------------
-trt           -0.0217      0.009     -2.512      0.012        -0.039    -0.005
-trt&trial     -0.0200      0.013     -1.555      0.120        -0.045     0.005
-ym_2009_09    -0.1120      0.009    -12.560      0.000        -0.130    -0.095
-ym_2009_10    -0.0171      0.009     -1.921      0.055        -0.035     0.000
-ym_2009_11     0.0425      0.009      4.764      0.000         0.025     0.060
-ym_2009_12     0.1835      0.009     20.573      0.000         0.166     0.201
-ym_2010_01     0.1742      0.009     19.398      0.000         0.157     0.192
-ym_2010_02    -0.0036      0.009     -0.397      0.691        -0.021     0.014
-ym_2010_03     0.0079      0.009      0.875      0.381        -0.010     0.025
+trial         -0.0201      0.012     -1.626      0.104        -0.044     0.004
+trt&trial     -0.0080      0.013     -0.617      0.537        -0.034     0.017
+ym_2009_09    -0.0175      0.012     -1.471      0.141        -0.041     0.006
+ym_2009_10     0.0774      0.012      6.497      0.000         0.054     0.101
+ym_2009_11     0.1370      0.012     11.503      0.000         0.114     0.160
+ym_2009_12     0.2780      0.012     23.344      0.000         0.255     0.301
+ym_2010_01     0.2858      0.012     23.995      0.000         0.262     0.309
+ym_2010_02     0.1080      0.012      9.068      0.000         0.085     0.131
+ym_2010_03     0.1194      0.012     10.028      0.000         0.096     0.143
 ==============================================================================
-Omnibus:                     2881.145   Durbin-Watson:                   1.180
-Prob(Omnibus):                  0.000   Jarque-Bera (JB):           344137.186
-Skew:                          -1.359   Prob(JB):                         0.00
-Kurtosis:                      40.418   Cond. No.                         3.11
+Omnibus:                     2940.250   Durbin-Watson:                   1.194
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           401634.697
+Skew:                          -1.374   Prob(JB):                         0.00
+Kurtosis:                      43.437   Cond. No.                         4.53
 ==============================================================================
 
 Warnings:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
 
 
-
-
-
-                     OLS Regression Results, With Weights                            
+                     Table 3. Weighted LS Regression Results                            
 ==============================================================================
-Dep. Variable:                      y   R-squared:                       0.161
-Model:                            OLS   Adj. R-squared:                  0.159
-Method:                 Least Squares   F-statistic:                     124.5
-Date:                Sat, 11 Apr 2015   Prob (F-statistic):          4.15e-215
-Time:                        19:03:02   Log-Likelihood:                -425.23
-No. Observations:                5868   AIC:                             868.5
-Df Residuals:                    5859   BIC:                             928.6
+Dep. Variable:                      y   R-squared:                       0.192
+Model:                            OLS   Adj. R-squared:                  0.190
+Method:                 Least Squares   F-statistic:                     154.3
+Date:                Sun, 19 Apr 2015   Prob (F-statistic):          8.05e-263
+Time:                        10:48:19   Log-Likelihood:                -314.58
+No. Observations:                5868   AIC:                             647.2
+Df Residuals:                    5859   BIC:                             707.3
 Df Model:                           9                                         
 Covariance Type:            nonrobust                                         
 ==============================================================================
                  coef    std err          t      P>|t|      [95.0% Conf. Int.]
 ------------------------------------------------------------------------------
-trt           -0.0148      0.006     -2.507      0.012        -0.026    -0.003
-trt&trial     -0.0397      0.009     -4.524      0.000        -0.057    -0.022
-ym_2009_09    -0.0901      0.008    -11.269      0.000        -0.106    -0.074
-ym_2009_10    -0.0111      0.008     -1.383      0.167        -0.027     0.005
-ym_2009_11     0.0381      0.008      4.765      0.000         0.022     0.054
-ym_2009_12     0.1695      0.008     21.198      0.000         0.154     0.185
-ym_2010_01     0.1650      0.008     20.322      0.000         0.149     0.181
-ym_2010_02     0.0100      0.008      1.230      0.219        -0.006     0.026
-ym_2010_03     0.0109      0.008      1.341      0.180        -0.005     0.027
+trial         -0.0222      0.011     -1.940      0.052        -0.045     0.000
+trt&trial     -0.0253      0.010     -2.615      0.009        -0.044    -0.006
+ym_2009_09    -0.0299      0.010     -2.944      0.003        -0.050    -0.010
+ym_2009_10     0.0491      0.010      4.825      0.000         0.029     0.069
+ym_2009_11     0.0982      0.010      9.657      0.000         0.078     0.118
+ym_2009_12     0.2296      0.010     22.571      0.000         0.210     0.250
+ym_2010_01     0.2396      0.010     23.547      0.000         0.220     0.259
+ym_2010_02     0.0846      0.010      8.313      0.000         0.065     0.105
+ym_2010_03     0.0855      0.010      8.402      0.000         0.066     0.105
 ==============================================================================
-Omnibus:                     2368.988   Durbin-Watson:                   1.218
-Prob(Omnibus):                  0.000   Jarque-Bera (JB):           148319.868
-Skew:                          -1.105   Prob(JB):                         0.00
-Kurtosis:                      27.530   Cond. No.                         4.35
+Omnibus:                     2492.920   Durbin-Watson:                   1.238
+Prob(Omnibus):                  0.000   Jarque-Bera (JB):           169546.835
+Skew:                          -1.185   Prob(JB):                         0.00
+Kurtosis:                      29.226   Cond. No.                         4.98
 ==============================================================================
 
 Warnings:
 [1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+
 
 
 
