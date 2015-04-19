@@ -57,6 +57,7 @@ btm = np.sqrt(df_s['C']**2/df_n['C'] + df_s['E']**2/df_n['E'])
 
 tstats = diff/btm
 sig = tstats[np.abs(tstats)>2]
+print(sig)
 sig.name = 'tstats'
 
 # The means confirm that the treatment group (C) has higher average consumption

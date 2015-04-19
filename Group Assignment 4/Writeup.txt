@@ -87,7 +87,7 @@ iii) The benefit of the logit is that one can consider the imbalance of one vari
 It's entirely likely that the groups look different on average, but look similar when you control for observables. 
 This would tell us whether any selection that exists was selection on observables or unobservables.
 
-On the other hand, by comparing means we get a sense of the that different groups look like as a whole.
+On the other hand, by comparing means we get a sense of how the different groups look like as a whole.
 
 iv) Questions 410, 420, and 43111 contain very similar information: namely, the age makeup of the household. In particular, 
 given the answers to questions 420 (How many people over 15 years of age live in your home?) and 43111 (How many people under 15 years of age live in your home?), 
