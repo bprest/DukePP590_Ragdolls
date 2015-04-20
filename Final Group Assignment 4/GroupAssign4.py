@@ -70,11 +70,11 @@ df['ym'] = df['year'].apply(str) + "_" + df['mo_str']
 
 ## 3.4 Set up regression variables from the merge dataframe
 y = df['log_kwh']
-T = df['trt']
 TP = df['trt_trial']
+P = df['trial']
 w = df['w']
 mu = pd.get_dummies(df['ym'], prefix = 'ym').iloc[:, 1:-1]
-X = pd.concat([TP, T, mu], axis=1)
+X = pd.concat([P, TP, mu], axis=1)
 
 os.chdir(main_dir)
 from fe_functions import *
