@@ -5,7 +5,7 @@ import os
 from pandas import Series, DataFrame
 import statsmodels.api as sm
 
-########################## SECTION 1: Finding Imbalanc #########################
+########################## SECTION 1: Finding Imbalance #########################
 main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/Data/task4/"
 
 os.chdir(main_dir)
