@@ -1,3 +1,5 @@
+"""9/9 pt"""
+
 from __future__ import division
 import pandas as pd
 import numpy as np
@@ -6,7 +8,7 @@ from pandas import Series, DataFrame
 import statsmodels.api as sm
 
 ########################## SECTION 1: Finding Imbalance #########################
-main_dir = "/Users/Pa/Desktop/2015Spring/PUBPOL590/Data/task4/"
+main_dir = '/Users/dnoriega/Dropbox/pubpol590_sp15/data_sets/CER/tasks/4_task_data/'
 
 os.chdir(main_dir)
 from logit_functions import *
